@@ -77,13 +77,6 @@
 </header>
 <div class="wrap">
 
-  <div class="banner">
-    <b>Data-source note:</b> NAV's Purchase Order export now includes <b>Document Date</b> (PO issue date) and <b>Due Date</b>, so the two requested stage gaps are now live for records where the data lines up —
-    <b>FAB Complete → P.O. Issue</b> is computable for 65 travelers (avg 26.7d, median 22d), and <b>P.O. Issue → Ship Out</b> for 4 so far (sample still small — most open POs haven't shipped back yet).
-    One real limit to know about: NAV's Purchase Orders list only shows <b>currently open</b> orders, so Document Date only exists for POs that are still open at export time (46 of 674 distinct POs in this pipeline). Historical POs that were already fully received before this snapshot won't get a retroactive issue date — coverage will keep growing as each week's snapshot captures that period's open POs before they close out.
-    M-Files' own "Ship Date" field is still populated on only 7 of 2,955 traveler records, so "Ship Out" mostly comes from the NAV Posted Purchase Receipt date joined on PO #.
-  </div>
-
   <div class="kpis">
     <div class="kpi accent-blue"><div class="label">Pre-Fabrication</div><div class="value">1992</div><div class="note">not yet FAB complete</div></div>
     <div class="kpi accent-orange"><div class="label">FAB Complete, Awaiting PO</div><div class="value">13</div><div class="note">no PO issued yet</div></div>
