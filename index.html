@@ -99,6 +99,62 @@
 
   .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   @media(max-width:1100px){.two-col{grid-template-columns:1fr;}}
+
+  .tooltip{position:fixed;z-index:1000;pointer-events:none;background:#1F2933;color:#fff;padding:9px 12px;border-radius:8px;font-size:12px;line-height:1.5;max-width:280px;box-shadow:0 8px 24px rgba(0,0,0,.22);display:none;}
+  .tooltip b{color:#fff;}
+  .tooltip .tt-muted{color:#B7C0CA;}
+  .tooltip .tt-row{display:flex;justify-content:space-between;gap:14px;}
+
+  .clickable{cursor:pointer;transition:box-shadow .12s ease, transform .12s ease;}
+  .clickable:hover{box-shadow:0 4px 14px rgba(47,95,163,.16);}
+  .kpi.clickable:hover{border-color:var(--blue);}
+  .kpi.clickable .hint{font-size:10px;color:var(--blue);margin-top:6px;opacity:0;transition:opacity .12s ease;}
+  .kpi.clickable:hover .hint{opacity:1;}
+  .funnel .seg.clickable:hover{background:var(--blue-bg);border-radius:8px;}
+  .mini-table tr.clickable:hover td{background:var(--blue-bg);}
+  .hist .bar.clickable:hover .fill{background:#1F4A85;}
+
+  @keyframes flashPanel{0%{box-shadow:0 0 0 3px rgba(47,95,163,.55);}100%{box-shadow:0 0 0 3px rgba(47,95,163,0);}}
+  .flash{animation:flashPanel .9s ease;}
+
+  .chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-bg);color:var(--blue);border-radius:20px;padding:4px 8px 4px 12px;font-size:12px;font-weight:600;}
+  .chip button{border:none;background:rgba(47,95,163,.14);color:var(--blue);width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;}
+  .chip button:hover{background:rgba(47,95,163,.28);}
+
+  /* ---- modal ---- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,26,33,.5);display:none;align-items:flex-start;justify-content:center;z-index:2000;padding:6vh 20px;overflow-y:auto;}
+  .modal-overlay.show{display:flex;}
+  .modal-panel{background:#fff;border-radius:12px;max-width:640px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:88vh;display:flex;flex-direction:column;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line);}
+  .modal-head h3{margin:0;font-size:15px;font-weight:700;}
+  .modal-head button{border:none;background:#EEF0F2;color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;}
+  .modal-head button:hover{background:#E4E8EE;color:var(--ink);}
+  .modal-body{padding:18px 20px;overflow-y:auto;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 20px;}
+  .detail-grid .dl{border-bottom:1px solid #F2F4F6;padding-bottom:8px;}
+  .detail-grid .dt{font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-bottom:3px;}
+  .detail-grid .dd{font-size:13px;color:var(--ink);word-break:break-word;}
+  @media(max-width:560px){.detail-grid{grid-template-columns:1fr;}}
+
+  /* ---- row / point hover affordances ---- */
+  #tbl tbody tr{cursor:pointer;}
+  .trend-svg .dot{cursor:pointer;transition:r .1s ease;}
+  .trend-svg .dot:hover{r:6;}
+  .trend-svg .crosshair{stroke:var(--blue);stroke-width:1;stroke-dasharray:3,3;opacity:0;}
+
+  /* ---- alert banner ---- */
+  .alert-banner{background:var(--red-bg);border:1px solid #F2C6BE;border-left:4px solid var(--red);border-radius:8px;padding:12px 18px;margin-bottom:18px;font-size:13px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  .alert-banner b{color:#6B1E12;}
+  .alert-banner .msg{flex:1;min-width:220px;color:#6B1E12;}
+  .alert-actions{display:flex;gap:8px;}
+  .btn{font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:6px;border:1px solid transparent;cursor:pointer;white-space:nowrap;}
+  .btn-red{background:var(--red);color:#fff;}
+  .btn-red:hover{background:#A6301F;}
+  .btn-outline{background:#fff;border-color:var(--line);color:var(--ink);}
+  .btn-outline:hover{border-color:var(--blue);color:var(--blue);}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);background:#1F2933;color:#fff;padding:10px 18px;border-radius:8px;font-size:12.5px;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .18s ease, transform .18s ease;z-index:3000;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -108,32 +164,41 @@
 </header>
 <div class="wrap">
 
+  <div class="alert-banner" id="alertBanner" style="display:none;">
+    <b>⚠ Overdue alert</b>
+    <span class="msg" id="alertMsg"></span>
+    <div class="alert-actions">
+      <button class="btn btn-outline" id="btnCopyAlert" type="button">Copy summary</button>
+      <button class="btn btn-red" id="btnEmailAlert" type="button">✉ Email this list</button>
+    </div>
+  </div>
+
   <div class="kpis">
-    <div class="kpi accent-blue"><div class="label">Pre-Fabrication</div><div class="value">1992</div><div class="note">not yet FAB complete</div></div>
-    <div class="kpi accent-orange"><div class="label">FAB Complete, Awaiting PO</div><div class="value">13</div><div class="note">no PO issued yet</div></div>
-    <div class="kpi accent-orange"><div class="label">Out at Supplier</div><div class="value">17</div><div class="note">PO issued, not yet back · avg 33.7 days open</div></div>
-    <div class="kpi accent-green"><div class="label">Received Back / Complete</div><div class="value">888</div><div class="note">of 918 in the PO pipeline</div></div>
-    <div class="kpi accent-red"><div class="label">Overdue at Supplier</div><div class="value">5</div><div class="note">past NAV due date, not yet back</div></div>
-    <div class="kpi accent-red"><div class="label">Data Anomalies</div><div class="value">39</div><div class="note">ship date before FAB complete — flagged, excluded from avg</div></div>
+    <div class="kpi accent-blue" id="kpiPrefab"><div class="label">Pre-Fabrication</div><div class="value">1992</div><div class="note">not yet FAB complete</div></div>
+    <div class="kpi accent-orange clickable" id="kpiAwaiting" data-drill="stage" data-value="FAB Complete – Awaiting PO"><div class="label">FAB Complete, Awaiting PO</div><div class="value">13</div><div class="note">no PO issued yet</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-orange clickable" id="kpiAtSupplier" data-drill="stage" data-value="PO Out – At Supplier"><div class="label">Out at Supplier</div><div class="value">17</div><div class="note">PO issued, not yet back · avg 33.7 days open</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-green clickable" id="kpiReceived" data-drill="stage" data-value="Received Back / Complete"><div class="label">Received Back / Complete</div><div class="value">888</div><div class="note">of 918 in the PO pipeline</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-red clickable" id="kpiOverdue" data-drill="anomaly" data-value="overdue"><div class="label">Overdue at Supplier</div><div class="value">5</div><div class="note">past NAV due date, not yet back</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-red clickable" id="kpiAnomaly" data-drill="anomaly" data-value="anomaly"><div class="label">Data Anomalies</div><div class="value">39</div><div class="note">ship date before FAB complete — flagged, excluded from avg</div><div class="hint">Click to view these →</div></div>
   </div>
 
   <div class="kpis" style="grid-template-columns:repeat(3,1fr);">
-    <div class="kpi accent-blue"><div class="label">FAB Complete → P.O. Issue</div><div class="value">26.7d</div><div class="note">median 22d · n=65 travelers</div></div>
-    <div class="kpi accent-blue"><div class="label">P.O. Issue → Ship Out</div><div class="value">1.8d</div><div class="note">median 0.0d · n=4 (small sample, growing)</div></div>
-    <div class="kpi accent-blue"><div class="label">Avg FAB → Ship (combined)</div><div class="value">2.1d</div><div class="note">median 1d · n=317 clean records</div></div>
+    <div class="kpi accent-blue clickable" id="kpiFabPo" data-drill="metric" data-value="fabToPo"><div class="label">FAB Complete → P.O. Issue</div><div class="value">26.7d</div><div class="note">median 22d · n=65 travelers</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-blue clickable" id="kpiPoShip" data-drill="metric" data-value="poToShip"><div class="label">P.O. Issue → Ship Out</div><div class="value">1.8d</div><div class="note">median 0.0d · n=4 (small sample, growing)</div><div class="hint">Click to view these →</div></div>
+    <div class="kpi accent-blue clickable" id="kpiCombined" data-drill="metric" data-value="combined"><div class="label">Avg FAB → Ship (combined)</div><div class="value">2.1d</div><div class="note">median 1d · n=317 clean records</div><div class="hint">Click to view these →</div></div>
   </div>
 
   <div class="panel">
-    <h2>Pipeline funnel <span class="n">(918 travelers currently in or past FAB — 1,992 pre-fabrication travelers excluded)</span></h2>
+    <h2>Pipeline funnel <span class="n">(918 travelers currently in or past FAB — 1,992 pre-fabrication travelers excluded — hover or click a stage)</span></h2>
     <div class="funnel">
-      <div class="seg"><div class="n">13</div><div class="l">FAB Complete<br>Awaiting PO</div></div>
-      <div class="seg"><div class="n">17</div><div class="l">PO Out<br>At Supplier</div></div>
-      <div class="seg"><div class="n">888</div><div class="l">Received Back<br>/ Complete</div></div>
+      <div class="seg clickable" data-stage="FAB Complete – Awaiting PO"><div class="n">13</div><div class="l">FAB Complete<br>Awaiting PO</div></div>
+      <div class="seg clickable" data-stage="PO Out – At Supplier"><div class="n">17</div><div class="l">PO Out<br>At Supplier</div></div>
+      <div class="seg clickable" data-stage="Received Back / Complete"><div class="n">888</div><div class="l">Received Back<br>/ Complete</div></div>
     </div>
   </div>
 
   <div class="panel">
-    <h2>FAB Complete → Ship Out cycle time <span class="n">(clean records only, n=317)</span></h2>
+    <h2>FAB Complete → Ship Out cycle time <span class="n">(clean records only, n=317 — hover or click a bar)</span></h2>
     <div id="histWrap"></div>
   </div>
 
@@ -186,8 +251,9 @@
     </table>
   </div>
 
-  <div class="panel">
+  <div class="panel" id="travelerPanel">
     <h2>Traveler detail <span class="n" id="tblCount"></span></h2>
+    <div class="chips" id="drillChips" style="display:none;"></div>
     <div class="controls">
       <input id="search" type="text" placeholder="Search job / traveler name / PO #…">
       <select id="fStage"><option value="">All stages</option></select>
@@ -218,6 +284,15 @@
     </table>
   </div>
 </div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-panel">
+    <div class="modal-head"><h3 id="modalTitle"></h3><button id="modalClose" type="button" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <footer>REV Engineering — Paint / Outside-Processing Tracking. Source: M-Files "Traveler Document Collections" view export + NAV "Purchase Orders" and "Posted Purchase Receipts" exports, joined on Purchase Order #. Rebuilt from a manual export refresh (no live NAV/M-Files connection yet).</footer>
 
 <script>
@@ -238,6 +313,63 @@ SUPPLIERS.forEach(s=>{ const o=document.createElement('option'); o.value=s; o.te
 
 function fmtDate(d){ if(!d) return '<span class="muted">—</span>'; return d; }
 
+// ---------- shared tooltip ----------
+const tip = document.createElement('div');
+tip.className = 'tooltip';
+document.body.appendChild(tip);
+function showTip(html, evt){
+  tip.innerHTML = html;
+  tip.style.display = 'block';
+  const pad = 16;
+  let x = evt.clientX + pad, y = evt.clientY + pad;
+  const rect = tip.getBoundingClientRect();
+  if (x + 290 > window.innerWidth) x = evt.clientX - 290 - pad;
+  if (y + rect.height > window.innerHeight) y = evt.clientY - rect.height - pad;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+function moveTip(evt){ if(tip.style.display==='block') showTip(tip.innerHTML, evt); }
+function hideTip(){ tip.style.display = 'none'; }
+
+// ---------- drill-down state (beyond the visible select filters) ----------
+let drill = { jobId:null, month:null, metric:null, dayRange:null };
+const METRIC_LABEL = { fabToPo:'FAB Complete → P.O. Issue records', poToShip:'P.O. Issue → Ship Out records', combined:'FAB → Ship (combined) records' };
+
+function clearDrill(){ drill = { jobId:null, month:null, metric:null, dayRange:null }; renderChips(); render(); }
+
+function resetAllFilters(){
+  document.getElementById('search').value = '';
+  fStage.value = '';
+  fSupplier.value = '';
+  document.getElementById('fAnomaly').value = '';
+  drill = { jobId:null, month:null, metric:null, dayRange:null };
+}
+function applyDrillAndShow(){ renderChips(); render(); flashTravelerPanel(); }
+
+function renderChips(){
+  const wrap = document.getElementById('drillChips');
+  const chips = [];
+  if(drill.jobId) chips.push({l:'Job: '+drill.jobId, clear:()=>{drill.jobId=null; renderChips(); render();}});
+  if(drill.month) chips.push({l:'Month: '+drill.month, clear:()=>{drill.month=null; renderChips(); render();}});
+  if(drill.metric) chips.push({l:METRIC_LABEL[drill.metric], clear:()=>{drill.metric=null; renderChips(); render();}});
+  if(drill.dayRange) chips.push({l:'Cycle '+drill.dayRange.min+'–'+(drill.dayRange.max===Infinity?'∞':drill.dayRange.max)+'d', clear:()=>{drill.dayRange=null; renderChips(); render();}});
+  if(!chips.length){ wrap.style.display='none'; wrap.innerHTML=''; return; }
+  wrap.style.display='flex';
+  wrap.innerHTML='';
+  chips.forEach(c=>{
+    const el = document.createElement('span'); el.className='chip';
+    el.innerHTML = c.l + ' <button type="button">×</button>';
+    el.querySelector('button').addEventListener('click', c.clear);
+    wrap.appendChild(el);
+  });
+}
+
+function flashTravelerPanel(){
+  const p = document.getElementById('travelerPanel');
+  p.scrollIntoView({behavior:'smooth', block:'start'});
+  p.classList.remove('flash'); void p.offsetWidth; p.classList.add('flash');
+}
+
 function render(){
   const q = document.getElementById('search').value.trim().toLowerCase();
   const stage = fStage.value;
@@ -250,6 +382,15 @@ function render(){
     if(anomaly==='anomaly' && !r.dataAnomaly) return false;
     if(anomaly==='clean' && r.dataAnomaly) return false;
     if(anomaly==='overdue' && !r.isOverdue) return false;
+    if(drill.jobId && r.jobId!==drill.jobId) return false;
+    if(drill.month && (!r.shipOut || !r.shipOut.startsWith(drill.month))) return false;
+    if(drill.metric==='fabToPo' && r.daysFabToPoIssue===null) return false;
+    if(drill.metric==='poToShip' && (r.daysPoIssueToShip===null || r.daysPoIssueToShip<0)) return false;
+    if(drill.metric==='combined' && (r.daysFabToShip===null || r.daysFabToShip<0)) return false;
+    if(drill.dayRange){
+      const dv = r.daysFabToShip;
+      if(dv===null || dv<0 || dv<drill.dayRange.min || (drill.dayRange.max!==Infinity && dv>drill.dayRange.max)) return false;
+    }
     if(q){
       const hay = (r.name+' '+(r.po||'')+' '+(r.supplier||'')).toLowerCase();
       if(!hay.includes(q)) return false;
@@ -279,6 +420,7 @@ function render(){
       '<td><span class="pill '+(STAGE_PILL[r.stage]||'gray')+'">'+r.stage+'</span></td>'+
       '</tr>';
   }).join('');
+  tbody.querySelectorAll('tr').forEach((tr,i)=> tr.addEventListener('click', ()=> openDetailModal(rows[i])) );
 }
 
 ['search'].forEach(id=>document.getElementById(id).addEventListener('input', render));
@@ -302,30 +444,40 @@ document.querySelectorAll('#tbl th').forEach(th=>{
 });
 
 // histogram
-(function(){
-  const buckets = [
-    {l:'0–3d', min:0, max:3},
-    {l:'4–7d', min:4, max:7},
-    {l:'8–14d', min:8, max:14},
-    {l:'15–30d', min:15, max:30},
-    {l:'30d+', min:31, max:Infinity},
-  ];
+const HIST_BUCKETS = [
+  {l:'0–3d', min:0, max:3},
+  {l:'4–7d', min:4, max:7},
+  {l:'8–14d', min:8, max:14},
+  {l:'15–30d', min:15, max:30},
+  {l:'30d+', min:31, max:Infinity},
+];
+function renderHistogram(){
   const clean = PIPELINE.filter(r=>r.daysFabToShip!==null && r.daysFabToShip>=0).map(r=>r.daysFabToShip);
-  const counts = buckets.map(b=>clean.filter(v=>v>=b.min && v<=b.max).length);
+  const counts = HIST_BUCKETS.map(b=>clean.filter(v=>v>=b.min && v<=b.max).length);
   const max = Math.max(...counts,1);
   const wrap = document.getElementById('histWrap');
+  wrap.innerHTML = '';
   const hist = document.createElement('div'); hist.className='hist';
-  counts.forEach(c=>{
-    const bar = document.createElement('div'); bar.className='bar';
+  counts.forEach((c,i)=>{
+    const b = HIST_BUCKETS[i];
+    const bar = document.createElement('div'); bar.className='bar clickable';
     bar.style.height = '100px';
     bar.innerHTML = '<span class="cnt">'+c+'</span><div class="fill" style="height:'+Math.max(4,Math.round(c/max*100))+'px"></div>';
+    bar.addEventListener('mouseenter', e=> showTip('<b>'+b.l+' cycle time</b>'+
+      '<div class="tt-row"><span class="tt-muted">Travelers</span><span>'+c+'</span></div>'+
+      '<div class="tt-row"><span class="tt-muted">Share of clean total</span><span>'+(clean.length? Math.round(c/clean.length*100):0)+'%</span></div>'+
+      '<div class="tt-muted" style="margin-top:6px;">Click to view these in the table below</div>', e));
+    bar.addEventListener('mousemove', moveTip);
+    bar.addEventListener('mouseleave', hideTip);
+    bar.addEventListener('click', ()=>{ resetAllFilters(); drill.dayRange = {min:b.min, max:b.max}; applyDrillAndShow(); });
     hist.appendChild(bar);
   });
   wrap.appendChild(hist);
   const labels = document.createElement('div'); labels.className='hist-labels';
-  buckets.forEach(b=>{ const d=document.createElement('div'); d.textContent=b.l; labels.appendChild(d); });
+  HIST_BUCKETS.forEach(b=>{ const d=document.createElement('div'); d.textContent=b.l; labels.appendChild(d); });
   wrap.appendChild(labels);
-})();
+}
+renderHistogram();
 
 render();
 
@@ -471,7 +623,7 @@ function renderTrend(){
     gridlines += '<text class="axislabel" x="2" y="'+(y(gv)+3)+'">'+Math.round(gv)+'d</text>';
   }
   let path = pts.map((p,i)=> (i===0?'M':'L') + x(i).toFixed(1)+','+y(p.avg).toFixed(1)).join(' ');
-  let dots = pts.map((p,i)=> '<circle class="dot" cx="'+x(i).toFixed(1)+'" cy="'+y(p.avg).toFixed(1)+'" r="3.5"><title>'+p.ym+': avg '+Math.round(p.avg*10)/10+'d (n='+p.n+')</title></circle>').join('');
+  let dots = pts.map((p,i)=> '<circle class="dot" cx="'+x(i).toFixed(1)+'" cy="'+y(p.avg).toFixed(1)+'" r="3.5" data-ym="'+p.ym+'" data-avg="'+(Math.round(p.avg*10)/10)+'" data-n="'+p.n+'"><title>'+p.ym+': avg '+Math.round(p.avg*10)/10+'d (n='+p.n+')</title></circle>').join('');
   let labels = pts.map((p,i)=> (i%Math.ceil(pts.length/8||1)===0) ? '<text class="axislabel" x="'+x(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle">'+p.ym+'</text>' : '').join('');
   svg.innerHTML = gridlines + '<path class="line" d="'+path+'"/>' + dots + labels;
 }
@@ -480,6 +632,156 @@ function renderTrend(){
 renderSLA();
 renderJobRollup();
 renderTrend();
+
+// ---------- detail modal (single traveler record, every field) ----------
+function fv(v, fallback){ return (v===null || v===undefined || v==='') ? (fallback||'<span class="muted">—</span>') : v; }
+function openDetailModal(r){
+  document.getElementById('modalTitle').textContent = r.name;
+  const rowsHtml = [
+    ['Job ID', fv(r.jobId)], ['PM (from Job List roster)', fv(r.pm)],
+    ['Supplier', fv(r.supplier)], ['PO #', fv(r.po)], ['PO # — raw M-Files field', fv(r.poRaw)],
+    ['Purchasing Status', fv(r.purchasingStatus)], ['Traveler Status', fv(r.travelerStatus)],
+    ['FAB Complete Date', r.fabComplete || (r.fabEstimate ? ('Not recorded — est. '+r.fabEstimate) : '<span class="muted">—</span>')],
+    ['P.O. Issue Date (NAV Document Date)', r.poIssueDate || '<span class="muted">Not available — PO not open in current NAV export</span>'],
+    ['P.O. Due Date (NAV)', fv(r.poDueDate)],
+    ['Ship / Received Back Date', fv(r.shipOut)], ['Ship date source', fv(r.shipOutSource)],
+    ['PO currently open in NAV?', r.isOpenPO ? 'Yes' : 'No'],
+    ['FAB → P.O. Issue (days)', r.daysFabToPoIssue===null?'<span class="muted">—</span>':r.daysFabToPoIssue+'d'],
+    ['P.O. Issue → Ship (days)', r.daysPoIssueToShip===null?'<span class="muted">—</span>':r.daysPoIssueToShip+'d'],
+    ['FAB → Ship, combined (days)', r.daysFabToShip===null?'<span class="muted">—</span>':r.daysFabToShip+'d'],
+    ['Days open, no ship yet', r.daysOpenSinceFab===null?'<span class="muted">—</span>':r.daysOpenSinceFab+'d'],
+    ['Stage', '<span class="pill '+(STAGE_PILL[r.stage]||'gray')+'">'+r.stage+'</span>'],
+    ['Overdue vs NAV Due Date', r.isOverdue ? '<span class="pill red">Yes ⚠</span>' : 'No'],
+    ['Data anomaly flagged', r.dataAnomaly ? '<span class="pill red">Yes ⚠ ship date before FAB complete</span>' : 'No'],
+  ];
+  document.getElementById('modalBody').innerHTML = '<div class="detail-grid">'+rowsHtml.map(([l,v])=>'<div class="dl"><div class="dt">'+l+'</div><div class="dd">'+v+'</div></div>').join('')+'</div>';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalOverlay').addEventListener('click', e=>{ if(e.target.id==='modalOverlay') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+// ---------- KPI cards + funnel segments: click to drill into the traveler table ----------
+document.querySelectorAll('.kpi.clickable').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    resetAllFilters();
+    const type = card.dataset.drill, val = card.dataset.value;
+    if(type==='stage') fStage.value = val;
+    else if(type==='anomaly') document.getElementById('fAnomaly').value = val;
+    else if(type==='metric') drill.metric = val;
+    applyDrillAndShow();
+  });
+});
+document.querySelectorAll('.funnel .seg.clickable').forEach(seg=>{
+  seg.addEventListener('mouseenter', e=>{
+    const st = seg.dataset.stage;
+    const n = PIPELINE.filter(r=>r.stage===st).length;
+    showTip('<b>'+st+'</b><div class="tt-row"><span class="tt-muted">Travelers</span><span>'+n+'</span></div><div class="tt-muted" style="margin-top:6px;">Click to view these in the table below</div>', e);
+  });
+  seg.addEventListener('mousemove', moveTip);
+  seg.addEventListener('mouseleave', hideTip);
+  seg.addEventListener('click', ()=>{ resetAllFilters(); fStage.value = seg.dataset.stage; applyDrillAndShow(); });
+});
+
+// ---------- supplier scorecard: hover detail + click to filter ----------
+const origRenderScorecard = renderScorecard;
+renderScorecard = function(combinedTarget){
+  origRenderScorecard(combinedTarget);
+  document.querySelectorAll('#scoreTbl tbody tr').forEach(tr=>{
+    tr.classList.add('clickable');
+    const supplierName = tr.children[0].textContent.trim();
+    tr.addEventListener('mouseenter', e=>{
+      const recs = PIPELINE.filter(r=>r.supplier===supplierName);
+      const stages = {}; recs.forEach(r=> stages[r.stage] = (stages[r.stage]||0)+1);
+      const stageLines = Object.entries(stages).map(([s,n])=>'<div class="tt-row"><span class="tt-muted">'+s+'</span><span>'+n+'</span></div>').join('');
+      showTip('<b>'+supplierName+'</b>'+stageLines+'<div class="tt-muted" style="margin-top:6px;">Click to filter the table below</div>', e);
+    });
+    tr.addEventListener('mousemove', moveTip);
+    tr.addEventListener('mouseleave', hideTip);
+    tr.addEventListener('click', ()=>{ resetAllFilters(); fSupplier.value = supplierName; applyDrillAndShow(); });
+  });
+};
+renderSLA(); // re-render now that renderScorecard is wired with hover/click
+
+// ---------- job rollup: hover detail + click to filter ----------
+const origRenderJobRollup = renderJobRollup;
+renderJobRollup = function(){
+  origRenderJobRollup();
+  document.querySelectorAll('#jobTbl tbody tr').forEach(tr=>{
+    tr.classList.add('clickable');
+    const jobId = tr.children[0].textContent.trim();
+    tr.addEventListener('mouseenter', e=>{
+      const recs = PIPELINE.filter(r=>(r.jobId||'(unmatched)')===jobId);
+      const pm = recs.find(r=>r.pm)?.pm || 'Not in PM roster';
+      showTip('<b>'+jobId+'</b>'+
+        '<div class="tt-row"><span class="tt-muted">PM</span><span>'+pm+'</span></div>'+
+        '<div class="tt-row"><span class="tt-muted">Total travelers</span><span>'+recs.length+'</span></div>'+
+        '<div class="tt-muted" style="margin-top:6px;">Click to view these in the table below</div>', e);
+    });
+    tr.addEventListener('mousemove', moveTip);
+    tr.addEventListener('mouseleave', hideTip);
+    tr.addEventListener('click', ()=>{ resetAllFilters(); drill.jobId = jobId; applyDrillAndShow(); });
+  });
+};
+renderJobRollup();
+
+// ---------- trend chart: crosshair hover + click-to-drill on points ----------
+const origRenderTrend = renderTrend;
+renderTrend = function(){
+  origRenderTrend();
+  document.querySelectorAll('#trendSvg .dot').forEach(dot=>{
+    const ym = dot.getAttribute('data-ym');
+    dot.addEventListener('mouseenter', e=>{
+      showTip('<b>'+dot.getAttribute('data-ym')+'</b>'+
+        '<div class="tt-row"><span class="tt-muted">Avg FAB→Ship</span><span>'+dot.getAttribute('data-avg')+'d</span></div>'+
+        '<div class="tt-row"><span class="tt-muted">Travelers shipped</span><span>'+dot.getAttribute('data-n')+'</span></div>'+
+        '<div class="tt-muted" style="margin-top:6px;">Click to view these in the table below</div>', e);
+    });
+    dot.addEventListener('mousemove', moveTip);
+    dot.addEventListener('mouseleave', hideTip);
+    dot.addEventListener('click', ()=>{ resetAllFilters(); drill.month = ym; applyDrillAndShow(); });
+  });
+};
+renderTrend();
+
+// ---------- overdue alert banner + email / copy ----------
+function overdueSummaryText(){
+  const overdue = PIPELINE.filter(r=>r.isOverdue);
+  const lines = overdue.map(r=> '- '+r.name+' | '+(r.supplier||'—')+' | PO '+(r.po||'—')+' | due '+r.poDueDate+' | FAB complete '+(r.fabComplete||'—'));
+  return 'Paint / Outside-Processing Tracking — Overdue at Supplier ('+overdue.length+')\n\n'+lines.join('\n');
+}
+function renderAlertBanner(){
+  const overdue = PIPELINE.filter(r=>r.isOverdue);
+  const banner = document.getElementById('alertBanner');
+  if(overdue.length===0){ banner.style.display='none'; return; }
+  banner.style.display='flex';
+  const bySupplier = {};
+  overdue.forEach(r=>{ bySupplier[r.supplier] = (bySupplier[r.supplier]||0)+1; });
+  const supplierBits = Object.entries(bySupplier).map(([s,n])=>s+' ('+n+')').join(', ');
+  document.getElementById('alertMsg').innerHTML = '<b>'+overdue.length+' PO'+(overdue.length===1?'':'s')+'</b> past due at supplier, not yet shipped back — '+supplierBits+'.';
+}
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=> t.classList.remove('show'), 2600);
+}
+document.getElementById('btnEmailAlert').addEventListener('click', ()=>{
+  const body = overdueSummaryText();
+  const subject = 'Paint Tracking — ' + PIPELINE.filter(r=>r.isOverdue).length + ' overdue POs at supplier';
+  window.location.href = 'mailto:?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+});
+document.getElementById('btnCopyAlert').addEventListener('click', ()=>{
+  const text = overdueSummaryText();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>showToast('Overdue summary copied to clipboard')).catch(()=>showToast('Could not copy — select the alert text manually'));
+  } else {
+    showToast('Clipboard not available in this view — use Email instead');
+  }
+});
+renderAlertBanner();
 </script>
 </body>
 </html>
